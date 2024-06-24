@@ -1,21 +1,47 @@
 <script lang="ts">
-import { defineComponent, h, defineEmits, onMounted, provide, ref, shallowRef, getCurrentInstance } from 'vue';
+import { defineComponent, h, defineEmits, onMounted, provide, ref, shallowRef, getCurrentInstance, nextTick } from 'vue';
 import { JsPsych, initJsPsych } from 'jspsych';
 import { nanoid } from 'nanoid';
 
-const createElement = (that: any, trialFn: Function, trial: object, on_load: Function) => defineComponent({
-  render() {
-    return h('div', { ref: 'myRef'});
-  },
-  setup() {
-    const myRef = ref(null)
-    onMounted(() => {
-      trialFn.call(that, myRef.value, trial, on_load)
-    })
-    return { myRef }
-  }
-})
-
+const createJsPsychContent = (component = undefined, experiment_width = "100%", trialFn: Function | undefined = undefined) => {
+  return defineComponent({
+    props: {
+      trial: {
+        type: Object,
+        required: true
+      },
+      on_load: {
+        type: Function,
+        required: true
+      }
+    },
+    render() {
+      var config: Record<string, any> = {
+        ref: 'myRef',
+        class: "jspsych-content",
+        id: 'jspsych-content',
+        tabIndex: "0",
+        style: `{ width: ${experiment_width} }`,
+      }
+      var componentCfg: Record<string, any> = {
+        key: nanoid(),         
+        trial: this.trial,
+        on_load: this.on_load 
+      } 
+      console.log(this.trial, this.on_load)
+      const _component = component && [h(component, componentCfg)]
+      return h('div', config, _component);
+    },
+    setup(props: any) {
+      const myRef = ref(null)
+      console.log('content')
+      onMounted(() => {
+        trialFn && trialFn(myRef.value, props.trial, props.on_load)
+      })
+      return { myRef }
+    }
+  })
+}
 export default {
   props: {
     timeline: {
@@ -37,66 +63,63 @@ export default {
     const curTrial = ref<any>()
     const curOnLoad = ref<any>()
 
-    const experiment_width = ref()
     const display_element = ref()
     const content_element = ref()
-    const key = ref()
+    const key = ref();
 
-    onMounted(() => {
-      (JsPsych as any).prototype.prepareDom = function () {
-        this.displayContainerElement = display_element.value
-        this.DOM_container = display_element.value
-        this.contentElement = content_element.value
-        this.DOM_target = content_element.value
-        this.data.createInteractionListeners();
-        window.addEventListener("beforeunload", props.options.on_close);
+    (JsPsych as any).prototype.prepareDom = function () {
+      this.displayContainerElement = document.body
+      this.DOM_container = this.displayContainerElement
+      
+      this.contentElement = document.querySelector("#jspsych-content")
+      this.DOM_target = this.contentElement
+
+      this.data.createInteractionListeners();
+      window.addEventListener("beforeunload", props.options.on_close);
+    }
+
+    const jsPsych: any = initJsPsych(props.options)
+    provide('jsPsych', jsPsych)
+    getCurrentInstance()!.emit('init', jsPsych)
+
+    curComp.value = createJsPsychContent();
+
+    const options = jsPsych.options || jsPsych.opts
+    const experiment_width = options.experiment_width || '100%';
+
+    const _timeline = props.timeline.map((data: any) => {
+      //可以指定type或者是component
+      if (data.type && data.component) {
+        throw new Error('Cannot specify both type and component in a single timeline node.')
+      }
+      else if (!data.type && !data.component) {
+        throw new Error('Must specify either type or component in a timeline node.')
       }
 
-      const jsPsych: any = initJsPsych(props.options)
-      provide('jsPsych', jsPsych)
-      getCurrentInstance()!.emit('init', jsPsych)
-
-      const options = jsPsych.options || jsPsych.opts
-      experiment_width.value = options.experiment_width || '100%';
-
-      const _timeline = props.timeline.map((data: any) => {
-        //可以指定type或者是component
-        if (data.type && data.component) {
-          throw new Error('Cannot specify both type and component in a single timeline node.')
+      const base = data.type || Object
+      const info = data.component ? data.component.info || {} : {}
+      class Plugin extends base {
+        static info = { ...base.info, ...info };
+        trial(display_element: HTMLElement, trial: any, on_load: any) {
+          curTrial.value = trial
+          curOnLoad.value = on_load
+          const doTrial = (...args: any[]) => super.trial && super.trial.call(this, ...args)
+          curComp.value = createJsPsychContent(data.component, experiment_width, doTrial)
         }
-        else if (!data.type && !data.component) {
-          throw new Error('Must specify either type or component in a timeline node.')
-        }
+      }
 
-        const base = data.type || Object
-        const info = data.component ? data.component.info || {} : {}
-        class Plugin extends base {
-          static info = { ...base.info, ...info };
+      return {
+        type: Plugin,
+        ...data.options,
+      }
+    })
 
-          trial(display_element: HTMLElement, trial: any, on_load: any) {
-            curTrial.value = trial
-            curOnLoad.value = on_load
-            if (data.component) {
-              curComp.value = data.component
-            }
-            else {
-              curComp.value = createElement(this, super.trial, trial, on_load)
-            }
-            if (props.reset) {
-              key.value = nanoid()
-            }
-          }
-        }
-
-        return {
-          type: Plugin,
-          ...data.options,
-        }
-      })
+    nextTick(() => {
+      console.log(curComp.value)
       jsPsych.run(_timeline)
     })
     return {
-      key, curComp, curTrial, curOnLoad, experiment_width, display_element, content_element
+      key, curComp, curTrial, curOnLoad, display_element, content_element
     }
   }
 }
@@ -104,11 +127,8 @@ export default {
 
 <template>
   <div ref="display_element" class="jspsych-display-element">
-    <div id="jspsych-content-wrapper" class="jspsych-content-wrapper" >
-      <div ref="content_element" class="jspsych-content" :key="key" tabIndex="0" :style="{ width: experiment_width }"
-        id="jspsych-content" >
-        <component :trail="curTrial" :on_load="curOnLoad" :is="curComp" />
-      </div>
+    <div id="jspsych-content-wrapper" class="jspsych-content-wrapper">
+      <component :trial="curTrial" :on_load="curOnLoad" :is="curComp" />
     </div>
   </div>
 </template>

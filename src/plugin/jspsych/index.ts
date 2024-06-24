@@ -8,13 +8,11 @@ interface createJsPsychParams {
 let jsPsych: JsPsych;
 
 const createJsPsych = (options: createJsPsychParams): Plugin => {
-  jsPsych = initJsPsych({ display_element: "jspsych" })
-  const trails = options.trials
   return {
     install(app: App, options: any[]) {
+      jsPsych = initJsPsych()
       // 配置此应用
       app.config.globalProperties.$jsPsych = jsPsych
-      app.config.globalProperties.$trails = trails
     }
   }
 }
@@ -26,7 +24,6 @@ const useJsPsych = () => {
 declare module 'vue' {
   interface ComponentCustomProperties {
     $jsPsych: JsPsych
-    $trials: object[]
   }
 }
 export { createJsPsych, useJsPsych }

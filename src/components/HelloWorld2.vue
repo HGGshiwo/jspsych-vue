@@ -1,7 +1,7 @@
 <template>
   <img @click="jsPsych.finishTrial()" alt="Vue logo" src="../assets/logo.png" />
   <div class="hello">
-    <h1>{{ props.trail.msg }}</h1>
+    <h1>{{ props.trial.msg }}</h1>
     <p>
       For a guide and recipes on how to configure / customize this project,<br />
       check out the
@@ -66,7 +66,7 @@ import { JsPsych } from "jspsych";
 import { inject, onMounted } from "vue";
 const msg = "hello";
 const jsPsych = inject('jsPsych') as JsPsych
-const props = defineProps(['trail'])
+const props = defineProps(['trial'])
 
 defineOptions({
   info: {
