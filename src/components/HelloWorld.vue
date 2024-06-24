@@ -1,4 +1,5 @@
 <template>
+  <img alt="Vue logo" src="../assets/logo.png" />
   <div class="hello">
     <h1>{{ msg }}</h1>
     <p>
@@ -94,15 +95,19 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { defineComponent } from "vue";
+const props = defineProps<{
+  msg: string;
+}>();
 
-export default defineComponent({
-  name: "HelloWorld",
-  props: {
-    msg: String,
-  },
-});
+const trial = ()=>{
+  console.log('trial')
+  return {"data": 111}
+}
+
+defineExpose({trial})
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

@@ -1,27 +1,38 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
+  <JsPsych @init="e=>console.log(e)" :timeline="timeline"></JsPsych>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import HelloWorld from "./components/HelloWorld.vue";
+import JsPsych from "./components/JsPsych.vue";
+import htmlKeyboardResponse from '@jspsych/plugin-html-keyboard-response';
+import HelloWorld2 from "./components/HelloWorld2.vue";
 
+const timeline = [
+  { component: HelloWorld2, options: { msg: "hello" } },
+  { component: HelloWorld2, options: { msg: "world" } },
+  { type: htmlKeyboardResponse, options: { stimulus: "Press the space bar!" } },
+  { component: HelloWorld2, options: { msg: "goodbye" } },
+]
 export default defineComponent({
   name: "App",
   components: {
-    HelloWorld,
+    JsPsych,
+  },
+  data() {
+    return {
+      timeline,
+    };
   },
 });
 </script>
 
 <style lang="scss">
+html,
+body,
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  height: 100%;
+  width: 100%;
+  margin: 0;
 }
 </style>
