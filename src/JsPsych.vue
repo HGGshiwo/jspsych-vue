@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, h, defineEmits, onMounted, provide, ref, shallowRef, getCurrentInstance, nextTick, computed } from 'vue';
+import { defineComponent, h, onMounted, provide, ref, shallowRef, getCurrentInstance } from 'vue';
 import { JsPsych, initJsPsych } from 'jspsych';
 import { nanoid } from 'nanoid';
 
@@ -8,11 +8,11 @@ const createJsPsychContent = (component = undefined, experiment_width = "100%", 
     props: {
       trial: {
         type: Object,
-        required: true
+        required: false
       },
       on_load: {
         type: Function,
-        required: true
+        required: false
       }
     },
     render() {
@@ -38,7 +38,6 @@ const createJsPsychContent = (component = undefined, experiment_width = "100%", 
     },
     setup(props: any) {
       const myRef = ref(null)
-      console.log('ccc', props.trial && props.trial.stimulus)
       onMounted(() => {
         trialFn && trialFn(myRef.value, props.trial, props.on_load)
       })
@@ -46,23 +45,32 @@ const createJsPsychContent = (component = undefined, experiment_width = "100%", 
     }
   })
 }
+
+const parseDisplayElement = (display_element: any) => {
+  if (!display_element) {
+    return document.body;
+  }
+  if (display_element instanceof Element) {
+    return display_element
+  }
+  if (typeof display_element === 'string') {
+    const dom = document.querySelector(display_element)
+    if (!dom) {
+      console.error("The element with the specified selector does not exist.")
+      return dom
+    }
+  }
+  console.error("Display element must be an HTML element or a string that specifies a query selector.")
+}
 export default {
   props: {
     options: {
       type: Object,
       default: {}
-    },
-    reset: {
-      type: Boolean,
-      default: true
-    },
-    autoRun: {
-      type: Boolean,
-      default: true
     }
   },
   emits: ['init'],
-  expose: ['run'],
+  expose: ['run', 'addNodeToEndOfTimeline', 'displayData'],
   setup(props: any, { slots }: any) {
     const curComp = shallowRef<any>()
     const curTrial = ref<any>()
@@ -73,7 +81,8 @@ export default {
     const key = ref();
 
     (JsPsych as any).prototype.prepareDom = function () {
-      this.displayContainerElement = document.body
+      let display_element = parseDisplayElement(props.options.display_element)
+      this.displayContainerElement = display_element
       this.DOM_container = this.displayContainerElement
 
       this.contentElement = document.querySelector("#jspsych-content")
@@ -83,16 +92,30 @@ export default {
       window.addEventListener("beforeunload", props.options.on_close);
     }
 
+    const finishComp = (slots.finish && slots.finish()) || (slots.default && slots.default())
+    if (finishComp) {
+      const _finish = props.options.on_finish
+      props.options.on_finish = (...args: any[]) => {
+        curComp.value = createJsPsychContent(finishComp, experiment_width, () => {
+          _finish && _finish(...args)
+        })
+      }
+    }
+
     const jsPsych: any = initJsPsych(props.options)
     provide('jsPsych', jsPsych)
     getCurrentInstance()!.emit('init', jsPsych)
 
-    curComp.value = createJsPsychContent(slots.default());
-
     const options = jsPsych.options || jsPsych.opts
-    const experiment_width = options.experiment_width || '100%';
+    let experiment_width = options.experiment_width || '100%';
+    if (typeof experiment_width === 'number') {
+      experiment_width = `${experiment_width}px`
+    }
 
-    const convertTimeline = (timeline: any[]) => timeline.map((data: any) => {
+    const startComp = (slots.start && slots.start()) || (slots.default && slots.default())
+    curComp.value = createJsPsychContent(startComp, experiment_width);
+
+    const convertTimelineNode = (data: any) => {
       //可以指定type或者是component
       if (data.type && data.component) {
         throw new Error('Cannot specify both type and component in a single timeline node.')
@@ -106,25 +129,58 @@ export default {
       class Plugin extends base {
         static info = { ...base.info, ...info };
         trial(display_element: HTMLElement, trial: any, on_load: any) {
-          console.log(trial.stimulus)
           curTrial.value = trial
           curOnLoad.value = on_load
           const doTrial = (...args: any[]) => super.trial && super.trial.call(this, ...args)
           curComp.value = createJsPsychContent(data.component, experiment_width, doTrial)
         }
       }
-
       return {
+        ...data,
         type: Plugin,
-        ...data.options,
       }
-    })
+    }
+
+    const convertTimeline = (timeline: any[] | any): any => {
+      //允许传入一个数组或者一个配置对象, 配置对象需要有timeline属性
+      if (timeline.type || timeline.component) {
+        return convertTimelineNode(timeline)
+      }
+      if (Array.isArray(timeline)) {
+        return timeline.map((node: any) => convertTimeline(node))
+      }
+      else {
+        //如果是配置对象, 必须有timeline属性
+        return {
+          ...timeline,
+          timeline: convertTimeline(timeline.timeline)
+        }
+      }
+    }
 
     const run = (timeline: any) => {
       return jsPsych.run(convertTimeline(timeline))
     }
+
+    const addNodeToEndOfTimeline = (node: any) => {
+      jsPsych.addNodeToEndOfTimeline(convertTimeline(node))
+    }
+
+    const displayData = (config: any) => {
+      var format = config.format || "json";
+      format = format.toLowerCase();
+      if (format != "json" && format != "csv") {
+        console.log("Invalid format declared for displayData function. Using json as default.");
+        format = "json";
+      }
+
+      const data_string = format === "json" ? jsPsych.data.allData.json(true) : jsPsych.data.allData.csv();
+      var _display_element = config.dom || display_element
+      _display_element.innerHTML = '<pre id="jspsych-data-display"></pre>';
+      document.getElementById("jspsych-data-display")!.textContent = data_string;
+    }
     return {
-      key, curComp, curTrial, curOnLoad, display_element, content_element, run
+      key, curComp, curTrial, curOnLoad, display_element, content_element, run, addNodeToEndOfTimeline, displayData
     }
   }
 }
