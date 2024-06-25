@@ -113,7 +113,10 @@ export default {
     }
 
     const startComp = (slots.start && slots.start()) || (slots.default && slots.default())
-    curComp.value = createJsPsychContent(startComp, experiment_width);
+    var _start = props.options.on_start
+    curComp.value = createJsPsychContent(startComp, experiment_width, () => {
+      _start && _start()
+    });
 
     const convertTimelineNode = (data: any) => {
       //可以指定type或者是component
