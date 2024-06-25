@@ -1,9 +1,10 @@
 <template>
-  <JsPsych @init="e=>console.log(e)" :timeline="timeline"></JsPsych>
+  <button @click="handleClick">click to run twice</button>
+  <JsPsych ref="jsPsychRef" @init="e=>console.log(e)" :timeline="timeline"></JsPsych>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 import JsPsych from "./components/JsPsych.vue";
 import htmlKeyboardResponse from '@jspsych/plugin-html-keyboard-response';
 import HelloWorld2 from "./components/HelloWorld2.vue";
@@ -14,14 +15,24 @@ const timeline = [
   { type: htmlKeyboardResponse, options: { stimulus: "Press the space bar!" } },
   { component: HelloWorld2, options: { msg: "goodbye" } },
 ]
+
 export default defineComponent({
   name: "App",
   components: {
     JsPsych,
   },
-  data() {
+  setup() {
+    const jsPsychRef = ref<any>(null)
+    const handleClick = () => {
+      jsPsychRef.value!.run().then((res: any)=>{
+        console.log(res)
+        jsPsychRef.value!.run()
+      })
+    }
     return {
       timeline,
+      handleClick,
+      jsPsychRef
     };
   },
 });

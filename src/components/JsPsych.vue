@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, h, defineEmits, onMounted, provide, ref, shallowRef, getCurrentInstance, nextTick } from 'vue';
+import { defineComponent, h, defineEmits, onMounted, provide, ref, shallowRef, getCurrentInstance, nextTick, computed } from 'vue';
 import { JsPsych, initJsPsych } from 'jspsych';
 import { nanoid } from 'nanoid';
 
@@ -21,20 +21,24 @@ const createJsPsychContent = (component = undefined, experiment_width = "100%", 
         class: "jspsych-content",
         id: 'jspsych-content',
         tabIndex: "0",
-        style: `{ width: ${experiment_width} }`,
+        style: `width: ${experiment_width};`,
       }
       var componentCfg: Record<string, any> = {
-        key: nanoid(),         
-        trial: this.trial,
-        on_load: this.on_load 
-      } 
-      console.log(this.trial, this.on_load)
-      const _component = component && [h(component, componentCfg)]
+        key: nanoid(),
+        ...this.$props
+      }
+      let _component: any; // jsPsych Content的子组件
+      if (Array.isArray(component)) { // 渲染默认插槽
+        _component = (component as any[]).map((c: any) => h(c))
+      }
+      else {
+        _component = component && h(component, componentCfg)
+      }
       return h('div', config, _component);
     },
     setup(props: any) {
       const myRef = ref(null)
-      console.log('content')
+      console.log('ccc', props.trial && props.trial.stimulus)
       onMounted(() => {
         trialFn && trialFn(myRef.value, props.trial, props.on_load)
       })
@@ -44,10 +48,6 @@ const createJsPsychContent = (component = undefined, experiment_width = "100%", 
 }
 export default {
   props: {
-    timeline: {
-      type: Array,
-      required: true
-    },
     options: {
       type: Object,
       default: {}
@@ -55,10 +55,15 @@ export default {
     reset: {
       type: Boolean,
       default: true
+    },
+    autoRun: {
+      type: Boolean,
+      default: true
     }
   },
   emits: ['init'],
-  setup(props: any) {
+  expose: ['run'],
+  setup(props: any, { slots }: any) {
     const curComp = shallowRef<any>()
     const curTrial = ref<any>()
     const curOnLoad = ref<any>()
@@ -70,7 +75,7 @@ export default {
     (JsPsych as any).prototype.prepareDom = function () {
       this.displayContainerElement = document.body
       this.DOM_container = this.displayContainerElement
-      
+
       this.contentElement = document.querySelector("#jspsych-content")
       this.DOM_target = this.contentElement
 
@@ -82,12 +87,12 @@ export default {
     provide('jsPsych', jsPsych)
     getCurrentInstance()!.emit('init', jsPsych)
 
-    curComp.value = createJsPsychContent();
+    curComp.value = createJsPsychContent(slots.default());
 
     const options = jsPsych.options || jsPsych.opts
     const experiment_width = options.experiment_width || '100%';
 
-    const _timeline = props.timeline.map((data: any) => {
+    const convertTimeline = (timeline: any[]) => timeline.map((data: any) => {
       //可以指定type或者是component
       if (data.type && data.component) {
         throw new Error('Cannot specify both type and component in a single timeline node.')
@@ -101,6 +106,7 @@ export default {
       class Plugin extends base {
         static info = { ...base.info, ...info };
         trial(display_element: HTMLElement, trial: any, on_load: any) {
+          console.log(trial.stimulus)
           curTrial.value = trial
           curOnLoad.value = on_load
           const doTrial = (...args: any[]) => super.trial && super.trial.call(this, ...args)
@@ -114,12 +120,11 @@ export default {
       }
     })
 
-    nextTick(() => {
-      console.log(curComp.value)
-      jsPsych.run(_timeline)
-    })
+    const run = (timeline: any) => {
+      return jsPsych.run(convertTimeline(timeline))
+    }
     return {
-      key, curComp, curTrial, curOnLoad, display_element, content_element
+      key, curComp, curTrial, curOnLoad, display_element, content_element, run
     }
   }
 }

@@ -1,11 +1,12 @@
 import 'jspsych/css/jspsych.css';
+import './index.css'
 import { createApp } from "vue";
-import App from "./App.vue";
+import App from "./App2.vue";
 import jsPsych from "./jspsych";
 
 
 const app = createApp(App)
-// app.use(jsPsych)
+// // app.use(jsPsych)
 app.mount("#app")
 
 // import {initJsPsych} from 'jspsych';
@@ -18,4 +19,10 @@ app.mount("#app")
 //   stimulus: 'Hello world!',
 // }
 
-// jsPsych.run([trial]);
+// const trial2 = {
+//     type: htmlKeyboardResponse,
+//     stimulus: 'Hello world2!',
+//   }
+
+// await jsPsych.run([trial]);
+// await jsPsych.run([trial2]);
