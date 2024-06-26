@@ -1,52 +1,40 @@
 {
   "name": "jspsych-vue",
-  "version": "0.1.0",
-  "description": "Vue3 component for JsPsych",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/HGGshiwo/jspsych-vue.git"
-  },
-  "files": [
-    "dist",
-    "src"
-  ],
-  "keywords": [
-    "jspsych",
-    "vue",
-    "vue.js",
-    "vue 3"
-  ],
-  "author": "HGGshiwo",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/HGGshiwo/jspsych-vue/issues"
-  },
-  "homepage": "https://github.com/HGGshiwo/jspsych-vue#readme",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "serve": "vue-cli-service serve ./example/main.ts",
-    "build": "vue-cli-service build --target lib --name JsPsychVue ./src/index.ts --mode production"
+    "dev": "vite",
+    "build": "run-p type-check \"build-only {@}\" --",
+    "preview": "vite preview",
+    "test:unit": "vitest",
+    "build-only": "vite build",
+    "type-check": "vue-tsc --build --force",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+    "format": "prettier --write src/"
   },
   "dependencies": {
-    "@jspsych/plugin-html-keyboard-response": "^1.1.3",
-    "@jspsych/plugin-image-keyboard-response": "^1.1.3",
-    "@jspsych/plugin-preload": "^1.1.3",
-    "core-js": "^3.8.3",
-    "jspsych": "^7.3.4",
-    "nanoid": "^5.0.7",
-    "vue": "^3.2.13"
+    "vue": "^3.4.29"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "~5.0.0",
-    "@vue/cli-plugin-typescript": "~5.0.0",
-    "@vue/cli-service": "~5.0.0",
-    "sass": "^1.32.7",
-    "sass-loader": "^12.0.0",
-    "typescript": "~4.5.5"
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead",
-    "not ie 11"
-  ]
+    "@rushstack/eslint-patch": "^1.8.0",
+    "@tsconfig/node20": "^20.1.4",
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^20.14.5",
+    "@vitejs/plugin-vue": "^5.0.5",
+    "@vue/eslint-config-prettier": "^9.0.0",
+    "@vue/eslint-config-typescript": "^13.0.0",
+    "@vue/test-utils": "^2.4.6",
+    "@vue/tsconfig": "^0.5.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-vue": "^9.23.0",
+    "jsdom": "^24.1.0",
+    "npm-run-all2": "^6.2.0",
+    "prettier": "^3.2.5",
+    "typescript": "~5.4.0",
+    "vite": "^5.3.1",
+    "vite-plugin-vue-devtools": "^7.3.1",
+    "vitest": "^1.6.0",
+    "vue-tsc": "^2.0.21"
+  }
 }
