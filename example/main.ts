@@ -1,6 +1,7 @@
-import './assets/main.css'
+import 'jspsych/css/jspsych.css';
+import '../src/index.css'
+import { createApp } from "vue";
+import App from "./App.vue";
 
-import { createApp } from 'vue'
-import App from './App.vue'
-
-createApp(App).mount('#app')
+const app = createApp(App)
+app.mount("#app")
