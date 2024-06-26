@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, h, onMounted, provide, ref, shallowRef, getCurrentInstance } from 'vue';
-import { JsPsych, initJsPsych } from 'jspsych';
+import { JsPsych, initJsPsych } from "jspsych"
 import { nanoid } from 'nanoid';
 
 const createJsPsychContent = (component = undefined, experiment_width = "100%", trialFn: Function | undefined = undefined) => {
@@ -66,7 +66,7 @@ export default {
   props: {
     options: {
       type: Object,
-      default: () => { }
+      default: () => ({})
     }
   },
   emits: ['init'],
@@ -198,5 +198,13 @@ export default {
 .jspsych-display-element {
   height: 100%;
   width: 100%;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  width: 100%;
+  margin: 0;
 }
 </style>
