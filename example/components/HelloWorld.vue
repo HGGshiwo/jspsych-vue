@@ -1,7 +1,7 @@
 <template>
   <img @click="handleClick" alt="Vue logo" src="../assets/logo.png" />
   <div class="hello">
-    <h1>The  msg is {{ props.trial.msg }}, Click image above to continue.</h1>
+    <h1>The msg is {{ props.trial.msg }}, Click image above to continue.</h1>
     <p>
       For a guide and recipes on how to configure / customize this project,<br />
       check out the
@@ -63,7 +63,7 @@
 
 <script setup lang="ts">
 import { JsPsych } from "jspsych";
-import { inject, onMounted } from "vue";
+import { inject } from "vue";
 
 const jsPsych: JsPsych = inject('jsPsych')!
 const props = defineProps(['trial'])

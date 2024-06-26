@@ -1,29 +1,29 @@
-
-import jsPsychPreload from "@jspsych/plugin-preload";
-import jsPsychHtmlKeyboardResponse from "@jspsych/plugin-html-keyboard-response";
-import jsPsychImageKeyboardResponse from "@jspsych/plugin-image-keyboard-response";
-import blue from "../assets/blue.png";
-import orange from "../assets/orange.png";
+/* eslint-disable no-use-before-define */
+import jsPsychPreload from '@jspsych/plugin-preload'
+import jsPsychHtmlKeyboardResponse from '@jspsych/plugin-html-keyboard-response'
+import jsPsychImageKeyboardResponse from '@jspsych/plugin-image-keyboard-response'
+import blue from '../assets/blue.png'
+import orange from '../assets/orange.png'
 
 export default (jsPsych: any) => {
-  var timeline: any[] = [];
+  const timeline: any[] = []
 
   /* preload images */
-  var preload = {
+  const preload = {
     type: jsPsychPreload,
     images: [blue, orange]
-  };
-  timeline.push(preload);
+  }
+  timeline.push(preload)
 
   /* define welcome message trial */
-  var welcome = {
+  const welcome = {
     type: jsPsychHtmlKeyboardResponse,
-    stimulus: "Welcome to the experiment. Press any key to begin."
-  };
-  timeline.push(welcome);
+    stimulus: 'Welcome to the experiment. Press any key to begin.'
+  }
+  timeline.push(welcome)
 
   /* define instructions trial */
-  var instructions = {
+  const instructions = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `
       <p>In this experiment, a circle will appear in the center 
@@ -40,29 +40,32 @@ export default (jsPsych: any) => {
       <p>Press any key to begin.</p>
     `,
     post_trial_gap: 2000
-  };
-  timeline.push(instructions);
+  }
+  timeline.push(instructions)
 
   /* define trial stimuli array for timeline variables */
-  var test_stimuli = [
+  const test_stimuli = [
     { stimulus: blue, correct_response: 'f' },
     { stimulus: orange, correct_response: 'j' }
-  ];
+  ]
 
   /* define fixation and test trials */
-  var fixation = {
+  const fixation = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: '<div style="font-size:60px;">+</div>',
-    choices: "NO_KEYS",
+    choices: 'NO_KEYS',
     trial_duration: function () {
-      return jsPsych.randomization.sampleWithoutReplacement([250, 500, 750, 1000, 1250, 1500, 1750, 2000], 1)[0];
+      return jsPsych.randomization.sampleWithoutReplacement(
+        [250, 500, 750, 1000, 1250, 1500, 1750, 2000],
+        1
+      )[0]
     },
     data: {
       task: 'fixation'
     }
-  };
+  }
 
-  var test = {
+  const test = {
     type: jsPsychImageKeyboardResponse,
     stimulus: jsPsych.timelineVariable('stimulus'),
     choices: ['f', 'j'],
@@ -71,35 +74,33 @@ export default (jsPsych: any) => {
       correct_response: jsPsych.timelineVariable('correct_response')
     },
     on_finish: function (data: any) {
-      data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correct_response);
+      data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correct_response)
     }
-  };
+  }
 
   /* define test procedure */
-  var test_procedure = {
+  const test_procedure = {
     timeline: [fixation, test],
     timeline_variables: test_stimuli,
     repetitions: 5,
     randomize_order: true
-  };
-  timeline.push(test_procedure);
+  }
+  timeline.push(test_procedure)
 
   /* define debrief */
-  var debrief_block = {
+  const debrief_block = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: function () {
-
-      var trials = jsPsych.data.get().filter({ task: 'response' });
-      var correct_trials = trials.filter({ correct: true });
-      var accuracy = Math.round(correct_trials.count() / trials.count() * 100);
-      var rt = Math.round(correct_trials.select('rt').mean());
+      const trials = jsPsych.data.get().filter({ task: 'response' })
+      const correct_trials = trials.filter({ correct: true })
+      const accuracy = Math.round((correct_trials.count() / trials.count()) * 100)
+      const rt = Math.round(correct_trials.select('rt').mean())
 
       return `<p>You responded correctly on ${accuracy}% of the trials.</p>
         <p>Your average response time was ${rt}ms.</p>
-        <p>Press any key to complete the experiment. Thank you!</p>`;
-
+        <p>Press any key to complete the experiment. Thank you!</p>`
     }
-  };
-  timeline.push(debrief_block);
+  }
+  timeline.push(debrief_block)
   return timeline
 }

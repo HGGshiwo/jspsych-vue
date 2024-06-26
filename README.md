@@ -39,8 +39,13 @@ Then in some where of your vue app:
   import { ref, onMounted } from 'vue'
   const jsPsychRef = ref<any>()
 
+  var trials = [
+    { type: htmlResponce }, //use jspsych build in plugin
+    { component: HellowWorld } // use your jspsych component
+  ]
+
   onMounted(() => {
-    jsPsychRef.value.run(trail)
+    jsPsychRef.value.run(trials)
   })
 </script>
 ```
@@ -156,7 +161,7 @@ Example:
 
 ### 4.Obtain the jsPsych instance
 
-Every JsPsych component instantiates a JsPsych object. There are two methods to access the instance.:
+Every JsPsych component instantiates a JsPsych object. There are two methods to access the instance.
 
 The instance is returned during the JsPsych init event.
 
