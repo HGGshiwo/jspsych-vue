@@ -87,11 +87,11 @@ Same as the Plugin’s [trial method](https://www.jspsych.org/v7/developers/plug
 - `trial`: Parameters from the parameters object that can be passed in when defining the timeline.
 - `on_load`: Callback function for the load event.
 
-Please refer to the JsPsych documentation for specifics.
+Please refer to the JsPsych documentation for details.
 
 ### 2. Define the timeline in js file.
 
-Just like psych, you should define the timelime to run trials. In a JS file, for instance, `timeline/xxx.js` in the root directory, define a [timeline](https://www.jspsych.org/v7/overview/timeline/). But insead of set plugin to `trial.type`, you should set vue component to `trial.component`.
+Just like psych, you should define the timelime to run trials. Create a JS file, for instance, `timeline/xxx.js` in the root directory, then define a [timeline](https://www.jspsych.org/v7/overview/timeline/). But insead of set a Jspsych Plugin to `trial.type`, you should set a Vue Component to `trial.component`.
 
 Example:
 
@@ -173,8 +173,9 @@ Here are the differences.
 
   ```js
   class Plugin {
-    trial(trial, on_load) {
-      //do trial here
+    trial(display_element, trial, on_load) {
+      // draw something use js
+      // do trial here
     }
   }
   ```
