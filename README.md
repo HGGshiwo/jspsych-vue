@@ -244,17 +244,14 @@ Jspsych-Vue component offer slots that allow you to show component before experi
 Example:
 
 ```html
-<Jspsych>
+<JsPsych>
   <div>Please wait...</div>
-</Jspsych>
+</JsPsych>
 ```
 
+---
 
+Thats all about how to start.
 
------------------------------
-
-Thats all about how to start. 
-
-- If you want to know more details, please go to [referce](./doc/reference.md)
+- If you want to know more details, please go to [reference](./doc/reference.md)
 - If you want to see examples, please go to [example](./doc/example.md)
-

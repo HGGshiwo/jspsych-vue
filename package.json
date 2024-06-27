@@ -1,6 +1,6 @@
 {
   "name": "jspsych-vue",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Vue3 component for JsPsych",
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",
