@@ -1,3 +1,3 @@
-import JsPsych from '../src/JsPsych.vue'
+import _JsPsych from '../src/JsPsych.vue'
 
-export type JsPsych = typeof JsPsych
+export declare const JsPsych: typeof _JsPsych
