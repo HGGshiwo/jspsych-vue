@@ -252,6 +252,32 @@ Example:
 
 ---
 
+## 7. Render slot in Your component
+
+You can pass any componnet in timeline, then use it. Be careful to use a function return the component.
+
+Example:
+
+```ts
+const timeline = [{ component: MyComponent, compSlot: () => MySlot }]
+```
+
+Then use it in your component:
+
+```html
+<script setup>
+const props = defineProps(['trial'])
+const MySlot = props.trial.compSlot
+</script>
+
+<template>
+  <div>
+    ....
+    <MySlot></MySlot>
+  <div>
+</template>
+```
+
 Thats all about how to start.
 
 - If you want to know more details, please go to [reference](./doc/reference.md)

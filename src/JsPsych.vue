@@ -135,8 +135,9 @@ export default {
           curComp.value = createJsPsychContent(data.component, experiment_width, doTrial)
         }
       }
+      const { component, ...rest } = data
       return {
-        ...data,
+        ...rest,
         type: Plugin,
       }
     }
