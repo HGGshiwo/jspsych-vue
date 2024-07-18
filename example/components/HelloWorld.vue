@@ -66,7 +66,7 @@ import { JsPsych } from "jspsych";
 import { inject } from "vue";
 
 const jsPsych: JsPsych = inject('jsPsych')!
-const props = defineProps(['trial'])
+const props = defineProps(['trial', 'on_load'])
 
 const handleClick = () => jsPsych.finishTrial()
 

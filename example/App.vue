@@ -1,5 +1,5 @@
 <template>
-  <JsPsychVue :options="options" ref="jsPsychRef" @init="init">
+  <JsPsychVue :options="options" @init="init">
     <button type="button" class="btn btn-primary m-3" @click="run1">Run Hello World</button>
     <button type="button" class="btn btn-primary m-3" @click="run2">Run Reaction Time</button>
   </JsPsychVue>
@@ -29,7 +29,6 @@ import timeline2 from "./timeline/Responce";
 import Modal from "./components/Modal.vue";
 
 let jsPsych: any;
-const jsPsychRef = ref<any>(null);
 const showModal = ref(false)
 const contentRef = ref(null)
 
@@ -37,7 +36,7 @@ const options = {
   on_finish: () => {
     showModal.value = true
     nextTick(() => {
-      jsPsychRef.value.displayData({ dom: contentRef.value })
+      jsPsych.data.displayData({ dom: contentRef.value })
     })
   }
 }
@@ -47,10 +46,10 @@ const init = (instance: any) => {
 };
 
 const run1 = () => {
-  jsPsychRef.value!.run(timeline1(jsPsych));
+  jsPsych.run(timeline1(jsPsych));
 }
 
 const run2 = () => {
-  jsPsychRef.value!.run(timeline2(jsPsych));
+  jsPsych.run(timeline2(jsPsych));
 }
 </script>

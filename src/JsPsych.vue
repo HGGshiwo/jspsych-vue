@@ -70,7 +70,6 @@ export default {
     }
   },
   emits: ['init'],
-  expose: ['run', 'addNodeToEndOfTimeline', 'displayData'],
   setup(props, { slots }: any) {
     const curComp = shallowRef<any>()
     const curTrial = ref<any>()
@@ -90,19 +89,30 @@ export default {
 
       this.data.createInteractionListeners();
       window.addEventListener("beforeunload", props.options.on_close);
-    }
+    };
+
+    var _run = (JsPsych as any).prototype.run;
+    (JsPsych as any).prototype.run = function (timeline: any) {
+      return _run.call(this, convertTimeline(timeline))
+    };
+
+    var _addNodeToEndOfTimeline = (JsPsych as any).prototype.addNodeToEndOfTimeline;
+    (JsPsych as any).prototype.addNodeToEndOfTimeline = function (node: any) {
+      return _addNodeToEndOfTimeline.call(this, convertTimeline(node))
+    };
 
     const finishComp = (slots.finish && slots.finish()) || (slots.default && slots.default())
     const newOptions = props.options
     if (finishComp) {
       const _finish = props.options.on_finish
       newOptions.on_finish = (...args: any[]) => {
-        _finish && _finish(...args)
+        _finish && _finish.call(this, ...args)
         curComp.value = createJsPsychContent(finishComp, experiment_width)
       }
     }
 
     const jsPsych: any = initJsPsych(props.options)
+
     provide('jsPsych', jsPsych)
     getCurrentInstance()!.emit('init', jsPsych)
 
@@ -159,15 +169,7 @@ export default {
       }
     }
 
-    const run = (timeline: any) => {
-      return jsPsych.run(convertTimeline(timeline))
-    }
-
-    const addNodeToEndOfTimeline = (node: any) => {
-      jsPsych.addNodeToEndOfTimeline(convertTimeline(node))
-    }
-
-    const displayData = (config: any) => {
+    jsPsych.data.displayData = (config: any) => {
       var format = config.format || "json";
       format = format.toLowerCase();
       if (format != "json" && format != "csv") {
@@ -180,8 +182,9 @@ export default {
       _display_element.innerHTML = '<pre id="jspsych-data-display"></pre>';
       document.getElementById("jspsych-data-display")!.textContent = data_string;
     }
+
     return {
-      key, curComp, curTrial, curOnLoad, display_element, content_element, run, addNodeToEndOfTimeline, displayData
+      key, curComp, curTrial, curOnLoad, display_element, content_element
     }
   }
 }

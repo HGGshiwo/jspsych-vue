@@ -132,13 +132,15 @@ Example:
 
 ```html
 <template>
-  <JsPsych ref="JsPschRef"></JsPsych>
+  <JsPsych @init="e => jsPsch = e"></JsPsych>
 </template>
 
 <script>
   import timeline1 from '@/timeline/HellowWorld.ts'
+  var jsPsch = null
+
   onMounted(() => {
-    jsPschRef.value.run(timeline1)
+    jsPsch.run(timeline1)
   })
 </script>
 ```
@@ -194,16 +196,24 @@ Here are the differences.
 
 - run experiment
 
-  plugin
+  plugin / component
 
   ```js
   jsPsych.run([trial])
   ```
 
+- display data
+
+  plugin:
+
+  ```js
+  jsPsych.data.displayData('json')
+  ```
+
   component
 
   ```js
-  jsPsychRef.value.run([trial])
+  jsPsych.data.displayData({ dom: el, type: 'json' })
   ```
 
 When trial called, your component will be render as a child of Jspsych Component.

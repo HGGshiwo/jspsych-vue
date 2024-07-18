@@ -10,17 +10,13 @@ JsPsych components accept a property called [options](https://www.jspsych.org/v7
 
 ### Methods
 
-JsPsych object will overwrite dom in some method, to avoid confliction, JsPsych component offer the following methods:
+Jspsych-Vue component doesn't offer any methods, just use jspsych object.
 
-> Note: Please be mindful **NOT** to call methods with the same name on the JsPsych object.
->
-> Other methods of the `JsPsych` object can be called at will.
+But the componet overwrite jspsych.data.displayData as follows:
 
-| Name                     | Type                                              | Description                                                  |
-| ------------------------ | ------------------------------------------------- | ------------------------------------------------------------ |
-| `run`                    | `(Trials: any[])=>Promise`                        | To start an experiment, same as `JsPsych.run`                |
-| `addNodeToEndOfTimeline` | `(Node: any)=>void`                               | To add a node at the end, same as`JsPsych.addNodeToEndOfTimeline`. |
-| `displayData`            | `(options: {format: string, dom: Element})=>void` | To display data, same as `JsPsychData.displayData`, but you can define in which dom to render the data |
+| Name          | Type                                              | Description                                                                                            |
+| ------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `displayData` | `(options: {format: string, dom: Element})=>void` | To display data, same as `JsPsychData.displayData`, but you can define in which dom to render the data |
 
 ### Slots
 
@@ -49,7 +45,5 @@ Example:
   </template>
 </JsPsych>
 ```
-
-
 
 That will render a default welcome message before run called.
