@@ -30,7 +30,8 @@
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
-    "preview": "vite preview",
+    "build-example": "vite build --mode example",
+    "preview": "vite preview --outDir example/dist",
     "test:unit": "vitest",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
