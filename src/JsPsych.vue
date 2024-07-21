@@ -1,7 +1,10 @@
 <script lang="ts">
 import { defineComponent, h, onMounted, provide, ref, shallowRef, getCurrentInstance } from 'vue';
-import { JsPsych, initJsPsych } from "jspsych"
+const _JspsychModule = 'JspsychModule' in window ? window.JspsychModule : await import('jspsych');
+
+const { JsPsych, initJsPsych } = _JspsychModule as any;
 import { nanoid } from 'nanoid';
+
 
 const createJsPsychContent = (component = undefined, experiment_width = "100%", trialFn: Function | undefined = undefined) => {
   return defineComponent({

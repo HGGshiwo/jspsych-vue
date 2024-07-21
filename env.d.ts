@@ -4,3 +4,5 @@ declare module '*.vue' {
 
   const vueComponent: DefineComponent<{}, {}>
 }
+
+declare module 'jspsych'

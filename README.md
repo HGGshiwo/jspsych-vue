@@ -22,6 +22,8 @@ Use npm
 npm install jspsych-vue
 ```
 
+**Note**: To use jspsych-vue, you should also add jspsych(v7) to your project, both CDN and npm install are supported. For more details, see [https://www.jspsych.org/latest/tutorials/hello-world/](https://www.jspsych.org/latest/tutorials/hello-world/)
+
 Add css files in your main.js, which is look like:
 
 ```js
