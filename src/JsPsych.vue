@@ -1,5 +1,5 @@
 <script lang="ts">
-import { h, onMounted, provide, ref, shallowRef, getCurrentInstance } from 'vue';
+import { h, provide, ref, shallowRef, getCurrentInstance, nextTick } from 'vue';
 import { nanoid } from 'nanoid';
 
 const createJsPsychContent = (component = undefined, experiment_width = "100%", trialFn: Function | undefined = undefined) => {
@@ -16,8 +16,8 @@ const createJsPsychContent = (component = undefined, experiment_width = "100%", 
       }
     },
     setup(props: any) {
-      onMounted(() => {
-        trialFn && trialFn(document.querySelector('jspsych-content'), props.trial, props.on_load)
+      nextTick(() => {
+        trialFn && trialFn(document.querySelector('#jspsych-content'), props.trial, props.on_load)
       })
 
       return () => {
@@ -73,7 +73,7 @@ export default {
   setup(props, { slots }: any) {
     const jspsychModule = 'jsPsychModule' in window ? window.jsPsychModule : props.module;
     if (!jspsychModule) {
-      console.error('JsPsych module is not found. You can either install it using npm, then passing it as module prop to JsPsychVue component or use CDN to load it.')
+      throw Error('JsPsych module is not found. You can either install it using npm, then passing it as module prop to JsPsychVue component or use CDN to load it.')
     }
     const { JsPsych, initJsPsych } = jspsychModule as any;
 
@@ -146,7 +146,6 @@ export default {
           curOnLoad.value = on_load
           const doTrial = (...args: any[]) => super.trial && super.trial.call(this, ...args)
           curComp.value = createJsPsychContent(data.component, experiment_width, doTrial)
-          console.log(curComp.value)
         }
       }
       const { component, ...rest } = data
@@ -182,7 +181,7 @@ export default {
       var format = config.format || "json";
       format = format.toLowerCase();
       if (format != "json" && format != "csv") {
-        console.log("Invalid format declared for displayData function. Using json as default.");
+        console.error("Invalid format declared for displayData function. Using json as default.");
         format = "json";
       }
 
