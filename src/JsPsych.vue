@@ -55,11 +55,11 @@ const parseDisplayElement = (display_element: any) => {
   if (typeof display_element === 'string') {
     const dom = document.querySelector(display_element)
     if (!dom) {
-      console.error("The element with the specified selector does not exist.")
-      return dom
+      throw Error("The element with the specified selector does not exist.")
     }
+    return dom;
   }
-  console.error("Display element must be an HTML element or a string that specifies a query selector.")
+  throw Error("Display element must be an HTML element or a string that specifies a query selector.")
 }
 export default {
   props: {
@@ -164,18 +164,22 @@ export default {
 
     const convertTimeline = (timeline: any[] | any): any => {
       //允许传入一个数组或者一个配置对象, 配置对象需要有timeline属性
+      if (!timeline) {
+        throw Error('Try to convert an empty timeline. Do you forget add the plugin?')
+      }
       if (timeline.type || timeline.component) {
         return convertTimelineNode(timeline)
       }
       if (Array.isArray(timeline)) {
         return timeline.map((node: any) => convertTimeline(node))
       }
-      else {
-        //如果是配置对象, 必须有timeline属性
-        return {
-          ...timeline,
-          timeline: convertTimeline(timeline.timeline)
-        }
+      if (!timeline.timeline) {
+        throw Error(`TimelineNode expected one of the following property that is not undifined: timeline, type, component.`)
+      }
+      //如果是配置对象, 必须有timeline属性
+      return {
+        ...timeline,
+        timeline: convertTimeline(timeline.timeline)
       }
     }
 
