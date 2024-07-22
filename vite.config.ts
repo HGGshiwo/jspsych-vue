@@ -16,12 +16,23 @@ export default defineConfig(({ mode }) => {
     fileName: (format: any) => `index.${format}.js`
   }
 
+  const rollupOptions = {
+    external: ['vue', 'nanoid'],
+    output: {
+      globals: {
+        vue: 'Vue',
+        nanoid: 'nanoid'
+      }
+    }
+  }
+
   return {
     plugins: [vue(), vueDevTools()],
     base: './',
     build: {
       lib: build_example ? undefined : lib,
-      outDir: out_dir
+      outDir: out_dir,
+      rollupOptions: build_example ? undefined : rollupOptions
     },
     resolve: {
       alias: {

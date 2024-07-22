@@ -1,6 +1,6 @@
 {
   "name": "jspsych-vue",
-  "version": "0.2.2",
+  "version": "0.2.10",
   "description": "Vue3 component for JsPsych",
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",
@@ -36,7 +36,12 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "publish-package": "npm run build && npm publish --registry https://registry.npmjs.org"
+  },
+  "peerDependencies": {
+    "nanoid": "^5.0.7",
+    "vue": "^3.4.29"
   },
   "dependencies": {
     "nanoid": "^5.0.7",

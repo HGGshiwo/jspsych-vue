@@ -1,9 +1,10 @@
 <script lang="ts">
-import { defineComponent, h, onMounted, provide, ref, shallowRef, getCurrentInstance } from 'vue';
+import { h, onMounted, provide, ref, shallowRef, getCurrentInstance } from 'vue';
 import { nanoid } from 'nanoid';
 
 const createJsPsychContent = (component = undefined, experiment_width = "100%", trialFn: Function | undefined = undefined) => {
-  return defineComponent({
+  return {
+    name: 'JsPsychContent',
     props: {
       trial: {
         type: Object,
@@ -12,38 +13,32 @@ const createJsPsychContent = (component = undefined, experiment_width = "100%", 
       on_load: {
         type: Function,
         required: false
-      },
-    },
-    render() {
-      var config: Record<string, any> = {
-        ref: 'myRef',
-        class: "jspsych-content",
-        id: 'jspsych-content',
-        tabIndex: "0",
-        style: `width: ${experiment_width};`,
       }
-      var componentCfg: Record<string, any> = {
-        key: nanoid(),
-        ...this.$props
-      }
-      let _component: any; // jsPsych Content的子组件
-      if (Array.isArray(component)) { // 渲染默认插槽
-        _component = (component as any[]).map((c: any) => h(c))
-      }
-      else {
-        _component = component && h(component, componentCfg)
-      }
-      return h('div', config, _component);
     },
     setup(props: any) {
-      const myRef = ref(null)
       onMounted(() => {
-        trialFn && trialFn(myRef.value, props.trial, props.on_load)
+        trialFn && trialFn(document.querySelector('jspsych-content'), props.trial, props.on_load)
       })
-      return { myRef }
+
+      return () => {
+        let _component: any; // jsPsych Content的子组件
+        if (Array.isArray(component)) { // 渲染默认插槽
+          _component = (component as any[]).map((c: any) => h(c))
+        }
+        else {
+          _component = component && h(component, { key: nanoid(), ...props })
+        }
+        return h('div', {
+          class: "jspsych-content",
+          id: 'jspsych-content',
+          tabIndex: "0",
+          style: `width: ${experiment_width};`,
+        }, _component);
+      }
     }
-  })
+  }
 }
+
 
 const parseDisplayElement = (display_element: any) => {
   if (!display_element) {
@@ -61,7 +56,9 @@ const parseDisplayElement = (display_element: any) => {
   }
   throw Error("Display element must be an HTML element or a string that specifies a query selector.")
 }
+
 export default {
+  name: 'JsPsych',
   props: {
     options: {
       type: Object,
@@ -83,10 +80,6 @@ export default {
     const curComp = shallowRef<any>()
     const curTrial = ref<any>()
     const curOnLoad = ref<any>()
-
-    const display_element = ref()
-    const content_element = ref()
-    const key = ref();
 
     JsPsych.prototype.prepareDom = function () {
       let display_element = parseDisplayElement(props.options.display_element)
@@ -153,6 +146,7 @@ export default {
           curOnLoad.value = on_load
           const doTrial = (...args: any[]) => super.trial && super.trial.call(this, ...args)
           curComp.value = createJsPsychContent(data.component, experiment_width, doTrial)
+          console.log(curComp.value)
         }
       }
       const { component, ...rest } = data
@@ -194,26 +188,24 @@ export default {
 
       let data = jsPsych.data.allData ? jsPsych.data.allData : jsPsych.data.results;
       const data_string = format === "json" ? data.json(true) : data.csv();
-      var _display_element = config.dom || display_element
+      var _display_element = config.dom || document.querySelector('#jspsych-display-element')
       _display_element.innerHTML = '<pre id="jspsych-data-display"></pre>';
       document.getElementById("jspsych-data-display")!.textContent = data_string;
 
     }
 
-    return {
-      key, curComp, curTrial, curOnLoad, display_element, content_element
+    return () => {
+      return h('div', {
+        id: 'jspsych-display-element',
+        class: 'jspsych-display-element'
+      }, h('div', {
+        id: 'jspsych-content-wrapper',
+        class: 'jspsych-content-wrapper'
+      }, h(curComp.value, { trial: curTrial.value, on_load: curOnLoad.value })))
     }
   }
 }
 </script>
-
-<template>
-  <div ref="display_element" class="jspsych-display-element">
-    <div id="jspsych-content-wrapper" class="jspsych-content-wrapper">
-      <component :trial="curTrial" :on_load="curOnLoad" :is="curComp" />
-    </div>
-  </div>
-</template>
 
 <style lang="scss">
 .jspsych-display-element {
