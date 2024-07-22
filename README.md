@@ -22,19 +22,35 @@ Use npm
 npm install jspsych-vue
 ```
 
-**Note**: To use jspsych-vue, you should also add jspsych(v7) to your project, both CDN and npm install are supported. For more details, see [https://www.jspsych.org/latest/tutorials/hello-world/](https://www.jspsych.org/latest/tutorials/hello-world/)
+**Note**: To use jspsych-vue, you should also add jspsych(v7) to your project, both npm install and CDN are supported. For more details, see [https://www.jspsych.org/latest/tutorials/hello-world/](https://www.jspsych.org/latest/tutorials/hello-world/)
 
-Add css files in your main.js, which is look like:
+CDN are recommond.
+
+Add css files to your project, which is look like:
 
 ```js
 import './assets/main.css'
 import 'jspsych-vue/dist/style.css'
-import 'jspsych/css/jspsych.css'
+import 'jspsych/css/jspsych.css' // if use CDN, do not add this line.
 
 import { createApp } from 'vue'
 import App from './App.vue'
 
 createApp(App).mount('#app')
+```
+
+Then in your component, you should pass options to init jspsych object. For npm user, you should also pass module props.
+
+```html
+<script lang="ts" setup>
+  import * as jsPsychModule from 'jspsych' // for npm user
+  const options = {...} // any options
+</script>
+<template>
+  <JsPsych :options="options"></JsPsych>
+  <!-- for npm user, use module props -->
+  <JsPsych :options="options" :module="jsPsychModule"></JsPsych>
+</template>
 ```
 
 That's all!

@@ -1,5 +1,5 @@
 <template>
-  <JsPsychVue :options="options" @init="init">
+  <JsPsychVue :module="jsPsychModule" :options="options" @init="init">
     <button type="button" class="btn btn-primary m-3" @click="run1">Run Hello World</button>
     <button type="button" class="btn btn-primary m-3" @click="run2">Run Reaction Time</button>
   </JsPsychVue>
@@ -27,6 +27,7 @@ import JsPsychVue from "../src/JsPsych.vue";
 import timeline1 from "./timeline/HelloWorld";
 import timeline2 from "./timeline/Responce";
 import Modal from "./components/Modal.vue";
+import * as jsPsychModule from 'jspsych';
 
 let jsPsych: any;
 const showModal = ref(false)

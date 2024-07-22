@@ -1,10 +1,6 @@
 <script lang="ts">
 import { defineComponent, h, onMounted, provide, ref, shallowRef, getCurrentInstance } from 'vue';
-const _JspsychModule = 'JspsychModule' in window ? window.JspsychModule : await import('jspsych');
-
-const { JsPsych, initJsPsych } = _JspsychModule as any;
 import { nanoid } from 'nanoid';
-
 
 const createJsPsychContent = (component = undefined, experiment_width = "100%", trialFn: Function | undefined = undefined) => {
   return defineComponent({
@@ -16,7 +12,7 @@ const createJsPsychContent = (component = undefined, experiment_width = "100%", 
       on_load: {
         type: Function,
         required: false
-      }
+      },
     },
     render() {
       var config: Record<string, any> = {
@@ -70,10 +66,20 @@ export default {
     options: {
       type: Object,
       default: () => ({})
+    },
+    module: {
+      type: Object,
+      required: false
     }
   },
   emits: ['init'],
   setup(props, { slots }: any) {
+    const jspsychModule = 'jsPsychModule' in window ? window.jsPsychModule : props.module;
+    if (!jspsychModule) {
+      console.error('JsPsych module is not found. You can either install it using npm, then passing it as module prop to JsPsychVue component or use CDN to load it.')
+    }
+    const { JsPsych, initJsPsych } = jspsychModule as any;
+
     const curComp = shallowRef<any>()
     const curTrial = ref<any>()
     const curOnLoad = ref<any>()
@@ -82,25 +88,26 @@ export default {
     const content_element = ref()
     const key = ref();
 
-    (JsPsych as any).prototype.prepareDom = function () {
+    JsPsych.prototype.prepareDom = function () {
       let display_element = parseDisplayElement(props.options.display_element)
       this.displayContainerElement = display_element
       this.DOM_container = this.displayContainerElement
 
       this.contentElement = document.querySelector("#jspsych-content")
       this.DOM_target = this.contentElement
+      this.displayElement = this.contentElement
 
       this.data.createInteractionListeners();
       window.addEventListener("beforeunload", props.options.on_close);
     };
 
-    var _run = (JsPsych as any).prototype.run;
-    (JsPsych as any).prototype.run = function (timeline: any) {
+    var _run = JsPsych.prototype.run;
+    JsPsych.prototype.run = function (timeline: any) {
       return _run.call(this, convertTimeline(timeline))
     };
 
-    var _addNodeToEndOfTimeline = (JsPsych as any).prototype.addNodeToEndOfTimeline;
-    (JsPsych as any).prototype.addNodeToEndOfTimeline = function (node: any) {
+    var _addNodeToEndOfTimeline = JsPsych.prototype.addNodeToEndOfTimeline;
+    JsPsych.prototype.addNodeToEndOfTimeline = function (node: any) {
       return _addNodeToEndOfTimeline.call(this, convertTimeline(node))
     };
 
@@ -172,6 +179,7 @@ export default {
       }
     }
 
+
     jsPsych.data.displayData = (config: any) => {
       var format = config.format || "json";
       format = format.toLowerCase();
@@ -180,10 +188,12 @@ export default {
         format = "json";
       }
 
-      const data_string = format === "json" ? jsPsych.data.allData.json(true) : jsPsych.data.allData.csv();
+      let data = jsPsych.data.allData ? jsPsych.data.allData : jsPsych.data.results;
+      const data_string = format === "json" ? data.json(true) : data.csv();
       var _display_element = config.dom || display_element
       _display_element.innerHTML = '<pre id="jspsych-data-display"></pre>';
       document.getElementById("jspsych-data-display")!.textContent = data_string;
+
     }
 
     return {
