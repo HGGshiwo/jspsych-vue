@@ -2,7 +2,7 @@
 import { h, provide, ref, shallowRef, getCurrentInstance, nextTick } from 'vue';
 import { nanoid } from 'nanoid';
 
-const createJsPsychContent = (component = undefined, experiment_width = "100%", trialFn: Function | undefined = undefined) => {
+const createJsPsychContent = (component = undefined, experiment_width = "100%", trialFn: Function | undefined = undefined, resolve: Function | undefined = undefined) => {
   return {
     name: 'JsPsychContent',
     props: {
@@ -16,8 +16,15 @@ const createJsPsychContent = (component = undefined, experiment_width = "100%", 
       }
     },
     setup(props: any) {
-      nextTick(() => {
-        trialFn && trialFn(document.querySelector('#jspsych-content'), props.trial, props.on_load)
+      nextTick(async () => {
+        let result = trialFn?.(document.querySelector('#jspsych-content'), props.trial, props.on_load)
+        if (result instanceof Promise) {
+          result = await result
+        }
+        else {
+          props.on_load?.() // 如果返回的非Promise, 按照jspsych的约定需要手动调用on_load
+        }
+        resolve?.(result)
       })
 
       return () => {
@@ -56,6 +63,10 @@ const parseDisplayElement = (display_element: any) => {
   }
   throw Error("Display element must be an HTML element or a string that specifies a query selector.")
 }
+
+/**
+ * jsPsych.invokeTrial -> Plugin.trial -> component.setup -> onMounted -> trial 
+ */
 
 export default {
   name: 'JsPsych',
@@ -142,10 +153,12 @@ export default {
       class Plugin extends base {
         static info = { ...base.info, ...info };
         trial(display_element: HTMLElement, trial: any, on_load: any) {
-          curTrial.value = trial
-          curOnLoad.value = on_load
-          const doTrial = (...args: any[]) => super.trial && super.trial.call(this, ...args)
-          curComp.value = createJsPsychContent(data.component, experiment_width, doTrial)
+          return new Promise<any>((resolve) => {
+            curTrial.value = trial
+            curOnLoad.value = on_load
+            const doTrial = (...args: any[]) => super.trial?.call(this, ...args)
+            curComp.value = createJsPsychContent(data.component, experiment_width, doTrial, resolve)
+          })
         }
       }
       const { component, ...rest } = data
