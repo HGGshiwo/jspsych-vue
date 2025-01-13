@@ -20,11 +20,11 @@ const createJsPsychContent = (component = undefined, experiment_width = "100%", 
         let result = trialFn?.(document.querySelector('#jspsych-content'), props.trial, props.on_load)
         if (result instanceof Promise) {
           result = await result
+          resolve?.(result)
         }
         else {
           props.on_load?.() // 如果返回的非Promise, 按照jspsych的约定需要手动调用on_load
         }
-        resolve?.(result)
       })
 
       return () => {

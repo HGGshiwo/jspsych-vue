@@ -1,37 +1,39 @@
+以下是修改后的文档，修复了语法错误并简化了表达：
+
+---
+
 # JsPsych-Vue
 
-A Vue component for [JsPsych](https://www.jspsych.org/v7).
+A Vue component for [JsPsych](https://www.jspsych.org/v7), compatible with most official plugins and extensions.
 
-Compatible with most official plugins and extensions.
-
-Feel free to use any third-party component in JsPsych! 🎉🎉🎉
+Easily integrate third-party components into JsPsych experiments.
 
 [中文文档](./README.zh.md)
 
+Demo: [https://hggshiwo.github.io/jspsych-vue/](https://hggshiwo.github.io/jspsych-vue/)
+
 ## Setup
 
-Use yarn
+Install via Yarn:
 
-```
+```bash
 yarn add jspsych-vue
 ```
 
-Use npm
+Or via npm:
 
-```
+```bash
 npm install jspsych-vue
 ```
 
-**Note**: To use jspsych-vue, you should also add jspsych(v7) to your project, both npm install and CDN are supported. For more details, see [https://www.jspsych.org/latest/tutorials/hello-world/](https://www.jspsych.org/latest/tutorials/hello-world/)
+**Note**: Ensure `jspsych` (v7) is also installed in your project. You can use npm or a CDN. See the [official tutorial](https://www.jspsych.org/latest/tutorials/hello-world/) for details.
 
-CDN are recommond.
-
-Add css files to your project, which is look like:
+Using a CDN is recommended. Add the required CSS files to your project:
 
 ```js
 import './assets/main.css'
 import 'jspsych-vue/dist/style.css'
-import 'jspsych/css/jspsych.css' // if use CDN, do not add this line.
+import 'jspsych/css/jspsych.css' // Skip this line if using a CDN.
 
 import { createApp } from 'vue'
 import App from './App.vue'
@@ -39,210 +41,182 @@ import App from './App.vue'
 createApp(App).mount('#app')
 ```
 
-Then in your component, you should pass options to init jspsych object. For npm user, you should also pass module props.
+### In Components
+
+Pass `options` to initialize the `jsPsych` instance. For npm users, pass the `module` prop as well:
 
 ```html
 <script lang="ts" setup>
-  import * as jsPsychModule from 'jspsych' // for npm user
-  const options = {...} // any options
+  import * as jsPsychModule from 'jspsych'; // For npm users
+  const options = { ... }; // Experiment options
 </script>
+
 <template>
   <JsPsych :options="options"></JsPsych>
-  <!-- for npm user, use module props -->
+  <!-- For npm users -->
   <JsPsych :options="options" :module="jsPsychModule"></JsPsych>
 </template>
 ```
 
-That's all!
+That's it!
 
-## Bassic Usage
+---
 
-### 1. Write Component instead of Jspsych Plugin
+## Basic Usage
 
-Jspsych Plugin is the basic part of an experiement, it defines the interface, collects data, push the timeline and so on. By the way, there are plenty of plugins you can find in jspsych and jspsych-contrib.
+### 1. Replace Plugins with Components
 
-Though Jspsych Plugin is powerful, the limitation is that you can only use js to draw the interface. So here comes Jspsych-Vue, which allows you to replace any Plugin by a Vue Component, and feel free to use any third-part UI component!
+JsPsych plugins define experiment logic, interfaces, and data handling. However, they limit UI flexibility as everything is rendered in JavaScript. With JsPsych-Vue, you can replace plugins with Vue components and freely use third-party UI libraries.
 
-If you want to use a Component in JsPsych, make sure it meets following two requets:
+To use a Vue component in JsPsych, ensure:
 
-- Export the `info` property at the top level of the component (see [jsPsych Plugin](https://www.jspsych.org/v7/developers/plugin-development/#static-info))
-- Call `jsPschy.finishTrial` at the appropriate time to go to next trial.
+1. It exports a top-level `info` object (similar to JsPsych plugins).
+2. It calls `jsPsych.finishTrial` at the appropriate time.
 
 Example:
 
 ```html
 <template>
-  <div>Anything you want to show...</div>
+  <div>Custom UI goes here...</div>
 </template>
+
 <script>
   export default {
     info: {
-      parameters: {...} // info just the same as Jspsych Plugin
+      parameters: { ... } // Same structure as a JsPsych plugin
     },
     setup(props) {
-      // no more trial function, just do anthing within setup.
-      ...
-      jsPsych.finiTrial() // remember to finish trial at some point, like when user click the button.
+      // Perform experiment logic
+      jsPsych.finishTrial(); // Ensure to call this to proceed
     }
-  }
+  };
 </script>
 ```
 
-For users of the setup sugar, you should define info like this.
+For components using the `setup` syntax:
 
 ```html
 <script setup>
   const info = defineOptions({
-    parameters: {...}
-  })
+    parameters: { ... }
+  });
 </script>
 ```
 
-> Ensure not to use any local variables within `info`.
+Do not use local variables within `info`.
 
-Same as the Plugin’s [trial method](https://www.jspsych.org/v7/developers/plugin-development/#trial), the Vue component can accepts two props:
+Props provided to components include:
 
-- `trial`: Parameters from the parameters object that can be passed in when defining the timeline.
-- `on_load`: Callback function for the load event.
+- `trial`: Parameters passed when defining the timeline.
+- `on_load`: Callback for the load event.
 
-Please refer to the JsPsych documentation for details.
+Refer to the JsPsych documentation for details.
 
-### 2. Define the timeline in js file.
+---
 
-Just like psych, you should define the timelime to run trials. Create a JS file, for instance, `timeline/xxx.js` in the root directory, then define a [timeline](https://www.jspsych.org/v7/overview/timeline/). But insead of set a Jspsych Plugin to `trial.type`, you should set a Vue Component to `trial.component`.
+### 2. Define the Timeline in a JavaScript File
+
+Create a timeline file (e.g., `timeline/xxx.js`) and replace the `type` field with `component`:
 
 Example:
 
 ```js
-//timeline/HelloWorld.ts
+// timeline/HelloWorld.ts
 import HelloWorld from '@/component/HelloWorld.vue'
 
 const timeline = [{ component: HelloWorld }]
 export default timeline
 ```
 
-If you need use a jsPsych instance to define the timeline, just export a function.
-
-Example:
+If a JsPsych instance is required:
 
 ```js
-//timeline/HelloWorld.ts
+// timeline/HelloWorld.ts
 import HelloWorld from '@/component/HelloWorld.vue'
 
-const getTimeline (jsPsych: JsPsych) = [
+const getTimeline = (jsPsych) => [
   {
     component: HelloWorld,
     on_finish: () => {
-      //You can use the jsPsych instance somewhere.
+      // Use the jsPsych instance as needed
     }
   }
 ]
 export default getTimeline
 ```
 
-Simply put, you can replace the type of trial by component.
+---
 
-### 3. Define where to render the component and call `run` to start the experiment.
+### 3. Render Components and Start the Experiment
 
-Define where to render the component and call run to start the experiment at a specific time.
+Define the render location and call `run` to start the experiment.
 
 Example:
 
 ```html
 <template>
-  <JsPsych @init="e => jsPsch = e"></JsPsych>
+  <JsPsych @init="e => jsPsych = e"></JsPsych>
 </template>
 
 <script>
-  import timeline1 from '@/timeline/HellowWorld.ts'
-  var jsPsch = null
+  import timeline1 from '@/timeline/HelloWorld.ts'
+
+  let jsPsych = null
 
   onMounted(() => {
-    jsPsch.run(timeline1)
+    jsPsych.run(timeline1)
   })
 </script>
 ```
 
-That is the complete process for developing a Vue compont with jsPsych. Below are some details.
+---
 
-### 4. Use Jspsych Plugin in Jspych-Vue
+### 4. Use Plugins in JsPsych-Vue
 
-You can not use a component in a plugin(Because the trial itself define how to draw the dom, and it may overwrite the component), but you can still use Jspsych Plugin in Jspych-Vue.
+While plugins cannot render Vue components directly, you can still use them within the timeline. Nested timelines can mix plugins and components. See [nested timelines](https://www.jspsych.org/v7/overview/timeline/#nested-timelines) for details.
 
-Just use the origin way to define a trial, then push it in timeline. You can also define nested timelineNode use both component and trial. For more info see [Nested timeline.](https://www.jspsych.org/v7/overview/timeline/#nested-timelines)
+Key differences:
 
-Here are the differences.
+- **Define Trials**:
 
-- define trials:
+  - Plugin:
+    ```js
+    const trial = { type: MyPlugin, parameter1: value1 }
+    ```
+  - Component:
+    ```js
+    const trial = { component: MyComponent, prop1: value1 }
+    ```
 
-  plugin
-
-  ```js
-  let trial = { type: MyPlugin, parameters1: xxx, parameters2: xxx }
-  ```
-
-  component
-
-  ```js
-  let trial = { component: MyComponent, props1: xxx, props2: xxxx }
-  ```
-
-- use parameters and do trial:
-
-  plugin
-
-  ```js
-  class Plugin {
-    trial(display_element, trial, on_load) {
-      // draw something use js
-      // do trial here
+- **Logic**:
+  - Plugin:
+    ```js
+    class Plugin {
+      trial(display_element, trial, on_load) {
+        // Render and handle logic
+      }
     }
-  }
-  ```
+    ```
+  - Component:
+    ```html
+    <script>
+      export default {
+        setup(props) {
+          const trial = props.trial
+          const on_load = props.on_load
+          // Handle logic
+        }
+      }
+    </script>
+    ```
 
-  component
+---
 
-  ```js
-  export default {
-    setup(props) {
-      let trial = props.trial // {props1: xxx, props2: xxx}
-      let on_load = props.on_load
-      //do trial here
-    }
-  }
-  ```
+### 5. Access the JsPsych Instance
 
-- run experiment
+Two methods are available:
 
-  plugin / component
-
-  ```js
-  jsPsych.run([trial])
-  ```
-
-- display data
-
-  plugin:
-
-  ```js
-  jsPsych.data.displayData('json')
-  ```
-
-  component
-
-  ```js
-  jsPsych.data.displayData({ dom: el, type: 'json' })
-  ```
-
-When trial called, your component will be render as a child of Jspsych Component.
-
-### 5.Get the jsPsych instance
-
-Every JsPsych component create a JsPsych instance. There are two methods to access it.
-
-1. Use `init` event outside of a JsPsych component.
-
-   Example:
+1. Use the `init` event:
 
    ```html
    <template>
@@ -250,39 +224,39 @@ Every JsPsych component create a JsPsych instance. There are two methods to acce
    </template>
 
    <script setup>
-     let jsPsych;
-     const init = (instance: any) => jsPsych = instance;
+     let jsPsych
+     const init = (instance) => (jsPsych = instance)
    </script>
    ```
 
-2. Using `provide` within a JsPsych component.
-
-   Example:
+2. Use Vue's `provide`:
 
    ```html
    <script setup>
-     import { porvice } from 'vue'
+     import { provide } from 'vue'
      const jsPsych = provide('jsPsych')
    </script>
    ```
 
-## 6. Render default component before experiment
+---
 
-Jspsych-Vue component offer slots that allow you to show component before experiment start/after experiment end.
+### 6. Render Default Components Before/After the Experiment
+
+Use slots to display content before or after an experiment.
 
 Example:
 
 ```html
 <JsPsych>
-  <div>Please wait...</div>
+  <div>Loading...</div>
 </JsPsych>
 ```
 
 ---
 
-## 7. Render slot in Your component
+### 7. Use Slots in Custom Components
 
-You can pass any componnet in timeline, then use it. Be careful to use a function return the component.
+Pass components in the timeline and use them as slots.
 
 Example:
 
@@ -290,23 +264,22 @@ Example:
 const timeline = [{ component: MyComponent, compSlot: () => MySlot }]
 ```
 
-Then use it in your component:
+In `MyComponent`:
 
 ```html
 <script setup>
-const props = defineProps(['trial'])
-const MySlot = props.trial.compSlot
+  const props = defineProps(['trial'])
+  const MySlot = props.trial.compSlot
 </script>
 
 <template>
   <div>
-    ....
+    ...
     <MySlot></MySlot>
-  <div>
+  </div>
 </template>
 ```
 
-Thats all about how to start.
+---
 
-- If you want to know more details, please go to [reference](./doc/reference.md)
-- If you want to see examples, please go to [example](./doc/example.md)
+For more details, see the [reference](./doc/reference.md) or [examples](./doc/example.md).
