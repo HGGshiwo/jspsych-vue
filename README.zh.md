@@ -1,7 +1,3 @@
-以下是翻译后的内容：
-
----
-
 # JsPsych-Vue
 
 一个适用于 [JsPsych](https://www.jspsych.org/v7) 的 Vue 组件，兼容大多数官方插件和扩展。

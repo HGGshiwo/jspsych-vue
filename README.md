@@ -1,7 +1,3 @@
-以下是修改后的文档，修复了语法错误并简化了表达：
-
----
-
 # JsPsych-Vue
 
 A Vue component for [JsPsych](https://www.jspsych.org/v7), compatible with most official plugins and extensions.
